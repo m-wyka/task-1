@@ -1,0 +1,7 @@
+{
+  "form": {
+    "required": "This field is required",
+    "min": "Minimum 3 characters required",
+    "max": "Maximum 100 characters required"
+  }
+}
