@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref, watch } from "vue";
+import { onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useForm } from "vee-validate";
 import { object, string } from "yup";
@@ -16,7 +16,12 @@ type Props = {
 
 const props = defineProps<Props>();
 const { id } = useRoute().params;
-const file = ref<File | Ref | null>(null);
+const fileInput = ref<File | Ref | null>(null);
+const formData = ref({
+  firstName: "",
+  lastName: "",
+  avatar: "",
+});
 
 const { handleSubmit, resetForm } = useForm({
   validationSchema: object({
@@ -31,14 +36,8 @@ const { handleSubmit, resetForm } = useForm({
   }),
 });
 
-const formData = ref({
-  firstName: "",
-  lastName: "",
-  avatar: "",
-});
-
-const getUser = () => {
-  const { data } = useFetch<ResponseSingleUser>(`users/${id}`);
+const getUser = async () => {
+  const { data } = await useFetch<ResponseSingleUser>(`users/${id}`);
 
   watch(data, (newData) => {
     if (newData) {
@@ -63,18 +62,18 @@ const getUser = () => {
   });
 };
 
-if (props.mode === "edit") {
-  getUser();
-}
+onMounted(async () => {
+  if (props.mode === "edit") {
+    await getUser();
+  }
+});
 
 const handleInputFileClick = () => {
-  if (file.value) {
-    file.value.click();
-  }
+  fileInput.value?.click();
 };
 
 const handleUploadFile = () => {
-  const image = file.value.files[0];
+  const image = fileInput.value?.files[0];
 
   if (image) {
     const reader = new FileReader();
@@ -85,11 +84,11 @@ const handleUploadFile = () => {
   }
 };
 
-const updateUserDetails = () => {
+const updateUserDetails = async () => {
   let method = props.mode === "add" ? "POST" : "PATCH";
   let url = props.mode === "add" ? `users` : `users/${id}`;
 
-  return useFetch<ResponseSingleUser>(
+  await useFetch<ResponseSingleUser>(
     url,
     {},
     {
@@ -150,7 +149,7 @@ const handleFormSubmit = handleSubmit(() => {
         </form>
       </div>
 
-      <div class="card flex flex-wrap justify-center items-stretch p-5">
+      <div class="card flex flex-wrap flex-col justify-center items-center p-5">
         <div class="pt-8 pb-12 xl:pt-12 xl:pb-16">
           <img
             v-if="formData.avatar"
@@ -163,7 +162,7 @@ const handleFormSubmit = handleSubmit(() => {
         </div>
 
         <input
-          ref="file"
+          ref="fileInput"
           type="file"
           @change="handleUploadFile"
           accept="image/png, image/jpeg"
@@ -172,7 +171,7 @@ const handleFormSubmit = handleSubmit(() => {
 
         <Btn
           btnStyle="outline"
-          class="flex items-center justify-center w-full"
+          class="flex items-center justify-center w-full max-w-[300px] xl:max-w-full"
           @click="handleInputFileClick"
         >
           <CameraIcon class="w-[18px] mr-2" /> Change Photo

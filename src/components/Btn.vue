@@ -8,20 +8,23 @@ type Props = {
   size?: "sm" | "md" | "lg" | undefined;
 };
 
-const props = defineProps<Props>();
+const {
+  type = "button",
+  rounded = false,
+  btnStyle,
+  size,
+} = defineProps<Props>();
 
-const handleBtnSize = computed(() =>
-  props.size === undefined ? "" : `btn--${props.size}`
-);
+const btnSizeClass = computed(() => (size ? `btn--${size}` : ""));
 </script>
 
 <template>
   <button
-    :type="type || 'button'"
+    :type="type"
     :class="[
       rounded ? 'rounded-full' : 'btn--rounded',
       { 'btn--outline': btnStyle === 'outline' },
-      handleBtnSize,
+      btnSizeClass,
     ]"
     class="btn"
   >

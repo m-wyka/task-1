@@ -9,12 +9,13 @@ const emit = defineEmits<{
 
 const search = ref("");
 
-watch(
-  search,
-  debounce(() => {
-    emit("search", search.value);
-  }, 500)
-);
+const emitSearchValue = debounce((newValue: string) => {
+  emit("search", newValue);
+}, 500);
+
+watch(search, (newValue) => {
+  emitSearchValue(newValue);
+});
 </script>
 
 <template>

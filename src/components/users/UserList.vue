@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { nextTick, onMounted, ref, toRaw, watch } from "vue";
 import { RouterLink } from "vue-router";
 import { ModalsContainer } from "vue-final-modal";
 import { PlusIcon, PencilSquareIcon, TrashIcon } from "@heroicons/vue/24/solid";
@@ -13,11 +13,12 @@ import SearchInput from "@/components/SearchInput.vue";
 import Btn from "@/components/Btn.vue";
 
 const usersStore = useUsersStore();
+const { setPagination } = usersStore;
 const users = ref<User[]>([]);
 const isPaginationShown = ref(true);
 
-const getUsers = (page: number) => {
-  const { data } = useFetch<ResponseData<User[]>>("users", {
+const getUsers = async (page: number) => {
+  const { data } = await useFetch<ResponseData<User[]>>("users", {
     page: `${page}`,
     per_page: "10",
   });
@@ -27,7 +28,7 @@ const getUsers = (page: number) => {
       const { page, per_page, total, total_pages } = newData;
 
       users.value = newData.data;
-      usersStore.setPagination({
+      setPagination({
         page,
         per_page,
         total,
@@ -38,13 +39,15 @@ const getUsers = (page: number) => {
 };
 
 // Get list of users
-getUsers(1);
+onMounted(async () => {
+  await getUsers(1);
+});
 
-const handleUsersOnChangePage = (page: number) => {
-  getUsers(page);
+const handleUsersOnChangePage = async (page: number) => {
+  await getUsers(page);
 };
 
-const handleSearch = (searchValue: string) => {
+const handleSearch = async (searchValue: string) => {
   if (searchValue) {
     const filteredUsers = users.value.filter(
       (user) =>
@@ -56,7 +59,7 @@ const handleSearch = (searchValue: string) => {
     users.value = filteredUsers;
     isPaginationShown.value = false;
   } else {
-    getUsers(1);
+    await getUsers(1);
     isPaginationShown.value = true;
   }
 };
@@ -140,7 +143,7 @@ const handleDeleteUserModal = (user: User) => {
     </div>
 
     <Pagination v-if="isPaginationShown" @change="handleUsersOnChangePage" />
-    <DeleteUserModal v-model="usersStore.getDeleteUserModalState" />
+    <DeleteUserModal v-model="usersStore.deleteUserModalState" />
     <ModalsContainer />
   </div>
 </template>

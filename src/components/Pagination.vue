@@ -6,18 +6,14 @@ import {
 } from "@heroicons/vue/24/solid";
 
 const usersStore = useUsersStore();
+
 const emit = defineEmits<{
   (e: "change", id: number): void;
 }>();
 
-const onChangePage = (currentPage: number, direction: "prev" | "next") => {
-  switch (direction) {
-    case "prev":
-      emit("change", currentPage - 1);
-      break;
-    case "next":
-      emit("change", currentPage + 1);
-      break;
+const handlePageChange = (newPage: number) => {
+  if (newPage >= 1 && newPage <= usersStore.totalPages) {
+    emit("change", newPage);
   }
 };
 </script>
@@ -34,7 +30,7 @@ const onChangePage = (currentPage: number, direction: "prev" | "next") => {
             href="#"
             class="pagination__item pagination__item--arrow rounded-l-md"
             :class="{ 'pagination__item--disabled': usersStore.page === 1 }"
-            @click.prevent="onChangePage(usersStore.page, 'prev')"
+            @click.prevent="handlePageChange(usersStore.page - 1)"
           >
             <span class="sr-only">Previous</span>
             <ChevronDoubleLeftIcon class="w-[14px] h-[14px]" />
@@ -42,7 +38,7 @@ const onChangePage = (currentPage: number, direction: "prev" | "next") => {
 
           <a
             href="#"
-            :aria-current="index === 0 ? 'page' : 'false'"
+            :aria-current="usersStore.page === index + 1 ? 'page' : undefined"
             class="pagination__item"
             :class="{
               'pagination__item--active': usersStore.page === index + 1,
@@ -60,7 +56,7 @@ const onChangePage = (currentPage: number, direction: "prev" | "next") => {
               'pagination__item--disabled':
                 usersStore.page === usersStore.totalPages,
             }"
-            @click.prevent="onChangePage(usersStore.page, 'next')"
+            @click.prevent="handlePageChange(usersStore.page + 1)"
           >
             <span class="sr-only">Next</span>
             <ChevronDoubleRightIcon class="w-[14px] h-[14px]" />

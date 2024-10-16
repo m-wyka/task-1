@@ -36,8 +36,6 @@ export function useFetch<T>(
     try {
       const response = await fetch(url, options);
 
-      console.log(response);
-
       if (response.ok) {
         if (methods.includes(options?.method as Methods)) {
           toast(message as string, {
